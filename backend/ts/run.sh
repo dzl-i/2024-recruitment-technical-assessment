@@ -1,1 +1,1 @@
-tsc task.ts && node task.js
+npx tsc task.ts && node task.js

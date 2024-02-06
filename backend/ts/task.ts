@@ -11,21 +11,102 @@ type FileData = {
  * Task 1
  */
 function leafFiles(files: FileData[]): string[] {
-    return [];
+    let fileMap: { [key: number]: string } = {};
+
+    for (const file of files) {
+        fileMap[file.id] = file.name;
+    }
+
+    // Delete all files that is a parent of another file
+    for (const file of files) {
+        if (file.parent !== -1) {
+            delete fileMap[file.parent];
+        }
+    }
+
+    return Object.values(fileMap);
 }
 
 /**
  * Task 2
  */
 function kLargestCategories(files: FileData[], k: number): string[] {
-    return [];
+    let categoriesMap: { [key: string]: number } = {};
+
+    for (const file of files) {
+        for (const category of file.categories) {
+
+            // Count the categories
+            if (categoriesMap[category]) {
+                categoriesMap[category] += 1;
+            } else {
+                categoriesMap[category] = 1;
+            }
+        }
+    }
+
+    const sortedArray: string[] = Array.from(Object.entries(categoriesMap))
+        .sort(([keyA, valueA], [keyB, valueB]) => {
+            // Sort by values in decreasing order
+            if (valueB !== valueA) {
+                return valueB - valueA;
+            }
+            // If values are equal, sort by keys in ascending order
+            return keyA.localeCompare(keyB);
+        })
+        .slice(0, 3)
+        .map(([key]) => key);
+
+    return sortedArray;
 }
 
 /**
  * Task 3
  */
 function largestFileSize(files: FileData[]): number {
-    return 0;
+    let childrenMap: { [key: number]: FileData[] } = {};
+    let sizeMap: { [key: number]: number } = {};
+
+    // Create children map
+    for (const file of files) {
+        if (!childrenMap[file.id]) {
+            childrenMap[file.id] = [];
+        }
+
+        if (file.parent !== -1) {
+            if (!childrenMap[file.parent]) {
+                childrenMap[file.parent] = [file];
+            } else {
+                childrenMap[file.parent].push(file);
+            }
+        }
+    }
+
+    // Traverse through the children using recursion
+    function dfs(file: FileData, childrenMap: { [key: number]: FileData[] }, sizeMap: { [key: number]: number }): number {
+        // Check if the size has been computed
+        if (Object.keys(sizeMap).includes((file.id.toString()))) {
+            return sizeMap[file.id];
+        }
+
+        // Otherwise, compute the size of the file (including children)
+        let totalFileSize: number = file.size;
+        for (const child of childrenMap[file.id]) {
+            totalFileSize += dfs(child, childrenMap, sizeMap);
+        }
+
+        // Update the size map
+        sizeMap[file.id] = totalFileSize;
+        return totalFileSize;
+    }
+
+    // Compute all the file sizes
+    let currentMaxSize = 0;
+    for (const file of files) {
+        currentMaxSize = Math.max(currentMaxSize, dfs(file, childrenMap, sizeMap));
+    }
+
+    return currentMaxSize;
 }
 
 
