@@ -1,2 +1,7 @@
 Please detail the instructions to view your solution here:
 
+From the Root directory:
+1. cd frontend/solution 
+2. npm i 
+3. npm run start
+4. http://localhost:3000 
